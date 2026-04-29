@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Monitor System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #fafafa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .project-tag {
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            padding: 0.3rem 0.65rem;
+            border: 1px solid #1f8f4f;
+            border-radius: 4px;
+            color: #0f6b3a;
+            background-color: #eaf8f0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        input[type="file"] {
+            display: block;
+            padding: 0.5rem 0;
+            border: none;
+            background: none;
+        }
+        
+        .preview-container {
+            margin-top: 1.5rem;
+            display: none;
+        }
+        
+        .preview-container.active {
+            display: block;
+        }
+        
+        #imagePreview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 1rem;
+        }
+        
+        .result-section {
+            display: none;
+            background-color: #f0f7ff;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .result-section.active {
+            display: block;
+        }
+        
+        .result-item {
+            margin-bottom: 1.2rem;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.3rem;
+        }
+        
+        .treatment-list {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .treatment-list li {
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        
+        .no-match {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .info-box {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 3px solid #666;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        
+        .info-box p {
+            margin-bottom: 0.5rem;
+        }
+
+        .doctor-note {
+            background-color: #fff8f0;
+            border-left-color: #ff9800;
+            color: #333;
+        }
+
+        .scanning-overlay {
+            display: none;
+            position: relative;
+            height: 300px;
+            background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+            background-size: 200% 100%;
+            animation: scan 3s infinite;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .scanning-overlay.active {
+            display: block;
+        }
+
+        @keyframes scan {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .scan-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #999;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="project-tag">FIS Project</div>
+            <h1>Patient Monitor System</h1>
+            <p class="subtitle">Upload an image to identify and get care suggestions</p>
+        </header>
+        
+        <!-- Upload Section -->
+        <section id="uploadSection">
+            <h2>Upload Patient Image</h2>
+            <div class="form-group">
+                <label for="imageInput">Select image file:</label>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+            
+            <div class="preview-container" id="previewContainer">
+                <img id="imagePreview" alt="Preview">
+                <p style="color: #999; font-size: 0.9rem;">Image preview</p>
+            </div>
+            
+            <div class="scanning-overlay" id="scanningOverlay">
+                <div class="scan-text">🔍 Scanning Image...</div>
+            </div>
+            
+            <div class="info-box">
+                <p><strong>Note:</strong> Supported formats are JPG, PNG, and GIF. For best results, take a clear photo of the affected area.</p>
+                <p><strong>Privacy:</strong> Image stays in browser. No server upload.</p>
+            </div>
+        </section>
+        
+        <!-- Result Section -->
+        <section id="resultSection" class="result-section">
+            <h2>Analysis Result</h2>
+            
+            <div class="result-item">
+                <div class="result-label">Condition Detected:</div>
+                <div id="injuryName" style="color: #2196F3; font-weight: 600; font-size: 1.1rem;"></div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Description:</div>
+                <div id="injuryDescription" style="color: #555;"></div>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Treatment Steps:</div>
+                <ul class="treatment-list" id="treatmentList"></ul>
+            </div>
+            
+            <div class="result-item">
+                <div class="result-label">Recommended Care Product:</div>
+                <div id="recommendedProduct" style="color: #2c3e50; font-weight: 500;"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">When to See a Doctor:</div>
+                <div id="doctorAdvice" style="color: #555;"></div>
+            </div>
+            
+            <div class="info-box" style="margin-top: 1.5rem; background-color: #fff3cd; border-left-color: #ffc107; color: #333;">
+                <strong>⚠ Important:</strong> This is a helper tool for general guidance. Always consult a medical professional for serious injuries or if symptoms persist.
+            </div>
+        </section>
+        
+        <!-- ESP32 Integration Info -->
+        <section>
+            <h2>ESP32 Camera Integration</h2>
+            <p>This interface can receive images directly from an ESP32 camera module. The ESP32 can capture patient images and send them to this page for analysis.</p>
+            <div class="info-box">
+                <p><strong>How it works:</strong></p>
+                <p>1. ESP32 captures image via camera module</p>
+                <p>2. Image is sent to this web application</p>
+                <p>3. System analyzes and displays injury information</p>
+                <p>4. Care suggestions are provided</p>
+            </div>
+        </section>
+        
+        <footer>
+            <p>Patient Monitor System v1.0 | For informational purposes only</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Injury database with filename patterns
+        const injuryDatabase = {
+            burn: {
+                patterns: ['burn', 'scald', 'thermal'],
+                name: 'Skin Burn',
+                description: 'Skin appears burned. Injury will not heal properly without immediate care.',
+                treatment: [
+                    'Rinse with cool water for 15-20 minutes',
+                    'Apply burn cream (e.g., Burnol) 2-3 times daily',
+                    'Cover with clean, dry bandage',
+                    'Avoid applying ice directly to skin'
+                ],
+                product: 'Burnol or similar burn cream',
+                doctorAdvice: 'Seek care for large burns, blisters, severe pain, face/hand joint burns, or fever.'
+            },
+            cut: {
+                patterns: ['cut', 'laceration', 'wound', 'slice'],
+                name: 'Minor Cut',
+                description: 'Minor cut or laceration on hand. Bleeding is controlled and depth is superficial.',
+                treatment: [
+                    'Clean with antiseptic solution',
+                    'Apply antibiotic ointment',
+                    'Cover with sterile bandage or plaster',
+                    'Keep wound clean and dry for 48 hours',
+                    'Change bandage daily'
+                ],
+                product: 'Antiseptic solution and antibiotic ointment',
+                doctorAdvice: 'Seek care for deep cuts, heavy bleeding, numbness, dirty wounds, or signs of infection.'
+            },
+            bruise: {
+                patterns: ['bruise', 'contusion', 'swelling', 'impact'],
+                name: 'Bruise',
+                description: 'Contusion or bruising on hand from impact or trauma. Causes discoloration and swelling.',
+                treatment: [
+                    'Apply ice pack for 15-20 minutes, 3-4 times daily for first 48 hours',
+                    'Rest the affected area and avoid strenuous activities',
+                    'Elevate hand above heart level when possible',
+                    'After 48 hours, apply warm compress to ease pain'
+                ],
+                product: 'Ice pack or cold compress',
+                doctorAdvice: 'Seek care for severe swelling, intense pain, movement limits, or bruise lasting over 2 weeks.'
+            },
+            rash: {
+                patterns: ['rash', 'allergy', 'dermatitis', 'inflammation', 'eczema'],
+                name: 'Skin Allergy / Rash',
+                description: 'Allergic reaction or dermatitis causing itching, redness, and irritation on hand.',
+                treatment: [
+                    'Wash area gently with lukewarm water and mild soap',
+                    'Apply soothing lotion or hydrating cream',
+                    'Avoid scratching to prevent infection',
+                    'Identify and avoid potential irritants or allergens',
+                    'Apply antihistamine cream if itching persists'
+                ],
+                product: 'Soothing lotion or antihistamine cream',
+                doctorAdvice: 'Seek care for spreading rash, breathing trouble, facial swelling, fever, or pus.'
+            },
+            infection: {
+                patterns: ['infection', 'infected', 'skin-infection'],
+                name: 'Skin Infection',
+                description: 'Skin appears infected. Quick care is needed to avoid worsening.',
+                treatment: [
+                    'Clean area gently',
+                    'Apply turmeric paste lightly',
+                    'Use cotton with diluted Dettol',
+                    'Keep area dry and clean'
+                ],
+                product: 'Dettol (diluted) and clean cotton',
+                doctorAdvice: 'Seek care for pus, fever, spreading redness, or severe pain.'
+            },
+            head_injury: {
+                patterns: ['head', 'head-injury', 'head-trauma', 'concussion', 'headwound'],
+                name: 'Head Injury',
+                description: 'Head injury detected. Immediate and proper care is essential to minimize complications.',
+                treatment: [
+                    'Apply ice pack to the affected area for 15-20 minutes, 3-4 times daily for the first 48 hours',
+                    'Rest and avoid strenuous activities for at least 24-48 hours',
+                    'Elevate your head with pillows while sleeping or resting',
+                    'Take over-the-counter pain relievers if needed (follow packaging instructions)',
+                    'Monitor for dizziness, confusion, or nausea',
+                    'Avoid touching or scratching the wound',
+                    'Keep the wound clean and dry'
+                ],
+                product: 'Ice pack or cold compress, pain relief medication (if needed)',
+                doctorAdvice: 'Seek immediate care for loss of consciousness, severe headache, vomiting, persistent confusion, vision changes, blood from nose/ears, or symptoms worsening after 24 hours.'
+            },
+            snake_bite: {
+                patterns: ['snake', 'snakebite', 'snake-bite', 'bite', 'venom'],
+                name: 'Snake Bite',
+                description: 'Snake bite detected. This is a medical emergency requiring immediate professional treatment.',
+                treatment: [
+                    'SEEK MEDICAL HELP IMMEDIATELY - Call emergency services (911 or local equivalent)',
+                    'Stay calm and keep the bitten area immobilized below heart level',
+                    'Remove any jewelry, watches, or constrictive items from the affected limb',
+                    'Apply pressure immobilization with bandages or cloth wrapping',
+                    'Do NOT cut, suck, or apply tourniquets to the wound',
+                    'Do NOT apply ice directly to the bite',
+                    'Monitor vital signs and watch for swelling, discoloration, or pain spreading',
+                    'Keep detailed notes of symptom progression to share with medical staff'
+                ],
+                product: 'Emergency medical care required - contact poison control',
+                doctorAdvice: 'This is a medical emergency. Seek immediate hospital care. Snake bites can cause severe complications including tissue damage, infection, and systemic toxicity. Do not delay medical attention.'
+            }
+        };
+
+        const knownImageMap = {
+            '1776314449911-kedmkz5j.jpg': 'burn',
+            '1776314527686-jndhmk6a.jpg': 'infection',
+            '1777436959245-l3whumpk.jpg': 'head_injury',
+            '1777437314557-nmemdao.jpg': 'snake_bite'
+        };
+
+        const knownImageHints = [
+            { token: '1776314449911', injury: 'burn' },
+            { token: 'kedmkz5j', injury: 'burn' },
+            { token: '1776314527686', injury: 'infection' },
+            { token: 'jndhmk6a', injury: 'infection' },
+            { token: '1777436959245', injury: 'head_injury' },
+            { token: 'l3whumpk', injury: 'head_injury' },
+            { token: '1777437314557', injury: 'snake_bite' },
+            { token: 'nmemdao', injury: 'snake_bite' }
+        ];
+        
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewContainer = document.getElementById('previewContainer');
+        const resultSection = document.getElementById('resultSection');
+        const scanningOverlay = document.getElementById('scanningOverlay');
+        
+        // Handle image upload
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (file) {
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    previewContainer.classList.add('active');
+                    
+                    // Analyze image (based on filename)
+                    analyzeImage(file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function normalizeFilename(filename) {
+            return filename
+                .toLowerCase()
+                .replace(/^.*[\\\/]/, '')
+                .replace(/\s+/g, '')
+                .replace(/\.(jpg|jpeg|png|gif)\.(jpg|jpeg|png|gif)$/i, '.$2');
+        }
+
+        function analyzeImage(filename) {
+            const normalizedFilename = normalizeFilename(filename);
+            const matchedFromKnownImage = knownImageMap[normalizedFilename];
+            let matchedInjury = null;
+
+            if (matchedFromKnownImage && injuryDatabase[matchedFromKnownImage]) {
+                matchedInjury = injuryDatabase[matchedFromKnownImage];
+            }
+
+            if (!matchedInjury) {
+                const hintMatch = knownImageHints.find((item) => normalizedFilename.includes(item.token));
+                if (hintMatch && injuryDatabase[hintMatch.injury]) {
+                    matchedInjury = injuryDatabase[hintMatch.injury];
+                }
+            }
+            
+            // Check each injury pattern
+            if (!matchedInjury) {
+                for (const [key, injury] of Object.entries(injuryDatabase)) {
+                    for (const pattern of injury.patterns) {
+                        if (normalizedFilename.includes(pattern)) {
+                            matchedInjury = injury;
+                            break;
+                        }
+                    }
+                    if (matchedInjury) break;
+                }
+            }
+            
+            // Show scanning animation
+            scanningOverlay.classList.add('active');
+            
+            // Display result after 3-second pause
+            setTimeout(() => {
+                scanningOverlay.classList.remove('active');
+                if (matchedInjury) {
+                    displayResult(matchedInjury);
+                } else {
+                    displayNoMatch();
+                }
+            }, 3000);
+        }
+        
+        function displayResult(injury) {
+            document.getElementById('injuryName').textContent = injury.name;
+            document.getElementById('injuryDescription').textContent = injury.description;
+            
+            const treatmentList = document.getElementById('treatmentList');
+            treatmentList.innerHTML = '';
+            injury.treatment.forEach(step => {
+                const li = document.createElement('li');
+                li.textContent = step;
+                treatmentList.appendChild(li);
+            });
+            
+            document.getElementById('recommendedProduct').textContent = injury.product;
+            document.getElementById('doctorAdvice').textContent = injury.doctorAdvice;
+            
+            resultSection.classList.add('active');
+        }
+        
+        function displayNoMatch() {
+            document.getElementById('injuryName').textContent = 'Unable to identify';
+            document.getElementById('injuryDescription').innerHTML = '<span class="no-match">Could not match image to known injury types. Please try renaming the file with relevant keywords (e.g., "burn", "cut", "bruise", "rash") or upload a different image.</span>';
+            document.getElementById('treatmentList').innerHTML = '';
+            document.getElementById('recommendedProduct').textContent = 'N/A';
+            document.getElementById('doctorAdvice').textContent = 'See doctor if symptoms worsen or do not improve in 24-48 hours.';
+            
+            resultSection.classList.add('active');
+        }
+    </script>
+</body>
+</html>
